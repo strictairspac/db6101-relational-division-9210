@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 
 from src.config.resources import engine
 from src.constants.job_state import JobState
-from src.controllers.access import identity, reviewer
+from src.controllers.access import reviewer, staff
 from src.controllers.workbench import new_review
 from src.schemas.reviews import ReviewEntry, ReviewInput
 from src.schemas.runs import RunEntry
@@ -12,19 +12,19 @@ from src.utils.serial import canonical_json
 router = APIRouter(prefix="/runs", tags=["Execution"])
 
 
-@router.get("", response_model=list[RunEntry], dependencies=[Depends(identity)])
+@router.get("", response_model=list[RunEntry], dependencies=[Depends(staff)])
 def list_runs():
     with engine.connect() as db:
         return runs.list_entries(db)
 
 
-@router.get("/{run_id}", response_model=RunEntry, dependencies=[Depends(identity)])
+@router.get("/{run_id}", response_model=RunEntry, dependencies=[Depends(staff)])
 def run_detail(run_id: int):
     with engine.connect() as db:
         return runs.get(db, run_id)
 
 
-@router.get("/{run_id}/review", response_model=ReviewEntry | None, dependencies=[Depends(identity)])
+@router.get("/{run_id}/review", response_model=ReviewEntry | None, dependencies=[Depends(staff)])
 def review_detail(run_id: int):
     with engine.connect() as db:
         runs.get(db, run_id)
@@ -36,7 +36,7 @@ def sign(run_id: int, form: ReviewInput, user=Depends(reviewer)):
     return new_review(run_id, form, user)
 
 
-@router.get("/{run_id}/export", dependencies=[Depends(identity)])
+@router.get("/{run_id}/export", dependencies=[Depends(staff)])
 def export(run_id: int):
     with engine.connect() as db:
         run = runs.get(db, run_id)

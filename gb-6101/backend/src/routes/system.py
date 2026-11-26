@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import text
 
 from src.config.resources import cache, engine
-from src.controllers.access import identity
+from src.controllers.access import staff
 from src.domain.scenario import CONFIG
 from src.services.audit import history
 
@@ -22,7 +22,7 @@ def workbench():
     return {**CONFIG, "engine": "PostgreSQL 16" if engine.dialect.name == "postgresql" else "MySQL 8.0"}
 
 
-@router.get("/audit", dependencies=[Depends(identity)])
+@router.get("/audit", dependencies=[Depends(staff)])
 def recent_events(limit: int = Query(default=25, ge=1, le=100)):
     with engine.connect() as db:
         return history(db, limit)

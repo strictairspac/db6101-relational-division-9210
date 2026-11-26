@@ -6,8 +6,13 @@ from sqlalchemy import insert, select
 from src.constants.job_state import JobState
 from src.domain.scenario import CONFIG
 from src.models.cases import cases
+from src.models.drill import drill_batches
 from src.models.runs import runs
 from . import audit, cases as case_service
+
+# Drill copies are executed as ordinary runs, but they must not surface in the
+# original execution directory or its counts.
+_drill_case_ids = select(drill_batches.c.case_id)
 
 
 def query():
@@ -22,7 +27,8 @@ def get(db, run_id):
 
 
 def list_entries(db):
-    return [dict(row) for row in db.execute(query().order_by(runs.c.id.desc()).limit(100)).mappings()]
+    query_ = query().where(~runs.c.case_id.in_(_drill_case_ids))
+    return [dict(row) for row in db.execute(query_.order_by(runs.c.id.desc()).limit(100)).mappings()]
 
 
 def enqueue(db, case_id, parameter, actor):

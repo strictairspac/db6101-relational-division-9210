@@ -1,0 +1,5 @@
+# Test-only dependencies (not installed in the runtime image).
+-r requirements.txt
+pytest>=8.4,<10
+fakeredis==2.41.0
+httpx==0.29.0

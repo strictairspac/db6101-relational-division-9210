@@ -8,6 +8,7 @@ CONFIG = {
     "direction": "SQL 编写 / 关系除法",
     "mechanism": "PostgreSQL 嵌套 NOT EXISTS 对全套必检证据做关系除法。",
     "modules": ["交接班台", "车型与检证", "放行筛查", "缺项交接单"],
+    "drill_module": "演练副本",
     "unit": "交接班批次",
     "max_parameter": 1439,
     "parameter_label": "复核时点（当日分钟）",

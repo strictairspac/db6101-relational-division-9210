@@ -25,6 +25,6 @@ export function login(config, signedIn) {
     el("section", {class: "login-access"},
       el("h2", {}, "工作台登录"), form,
       el("details", {}, el("summary", {}, "演示账号"),
-        el("p", {}, "operator · reviewer · viewer"),
+        el("p", {}, "operator · reviewer · viewer · outsource"),
         el("p", {}, "共用口令 Demo-DbWorkbench-2026"))));
 }

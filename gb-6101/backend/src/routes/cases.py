@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from src.config.resources import engine
-from src.controllers.access import identity, operator
+from src.controllers.access import operator, staff
 from src.controllers.workbench import new_case, new_run
 from src.schemas.cases import CaseEntry, CaseInput
 from src.schemas.runs import RunEntry, RunInput
@@ -10,13 +10,13 @@ from src.services import cases
 router = APIRouter(prefix="/cases", tags=["Cases"])
 
 
-@router.get("", response_model=list[CaseEntry], dependencies=[Depends(identity)])
+@router.get("", response_model=list[CaseEntry], dependencies=[Depends(staff)])
 def list_cases():
     with engine.connect() as db:
         return cases.list_entries(db)
 
 
-@router.get("/{case_id}", response_model=CaseEntry, dependencies=[Depends(identity)])
+@router.get("/{case_id}", response_model=CaseEntry, dependencies=[Depends(staff)])
 def case_detail(case_id: int):
     with engine.connect() as db:
         return cases.get(db, case_id)

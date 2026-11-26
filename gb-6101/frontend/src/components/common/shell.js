@@ -2,10 +2,23 @@ import { Roles } from "../../constants/roles.js";
 import { routes } from "../../router/router.js";
 import { el } from "../../utils/dom.js";
 
+// Outsourced teams only see the drill module; every other role sees the normal
+// workflow plus drills.
+function navigation(config, role) {
+  const drillLabel = config.drill_module || "演练副本";
+  if (role === "outsource") {
+    return [{name: "drills", label: drillLabel}];
+  }
+  return [
+    ...routes.filter(name => name !== "drills").map((name, index) => ({name, label: config.modules[index]})),
+    {name: "drills", label: drillLabel},
+  ];
+}
+
 export function shell(config, user, route, page, signOut) {
-  const links = routes.map((name, index) => el("a", {
+  const links = navigation(config, user.role).map(({name, label}) => el("a", {
     href: `#${name}`, "aria-current": route.name === name ? "page" : null,
-  }, config.modules[index]));
+  }, label));
   return el("div", {class: "shell"},
     el("aside", {class: "rail"},
       el("a", {class: "brand", href: "#overview"}, config.title),

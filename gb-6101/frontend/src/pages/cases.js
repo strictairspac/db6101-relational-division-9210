@@ -5,6 +5,7 @@ import { table } from "../components/common/table.js";
 import { submit } from "../hooks/submit.js";
 import { navigate } from "../router/router.js";
 import { el } from "../utils/dom.js";
+import { time } from "../utils/format.js";
 
 function queueForm(config, selected) {
   const form = el("form", {class: "queue-form"},
@@ -15,6 +16,27 @@ function queueForm(config, selected) {
   submit(form, async values => {
     const run = await api.enqueue(selected.id, {parameter: Number(values.get("parameter"))});
     navigate(`runs/${run.id}`);
+  });
+  return form;
+}
+
+// Build a practice copy from this material's finished batches, straight from the
+// materials page. The chosen batches become one drill scene ("场").
+function drillForm(runs) {
+  const finished = runs.filter(run => run.status === "done");
+  if (!finished.length) return empty("该资料执行成功后，可在此建立外包演练副本。");
+  const boxes = finished.map(run => el("label", {class: "check"},
+    el("input", {type: "checkbox", name: "runs", value: run.id}),
+    el("span", {}, `批次 #${run.id} · ${run.parameter} 分 · ${time(run.finished_at)}`)));
+  const form = el("form", {class: "stack"},
+    field("演练名称", el("input", {name: "title", required: true, minlength: 2, maxlength: 120, value: "外包筛查演练"})),
+    el("fieldset", {class: "check-list"}, el("legend", {}, "选择要复演的历史批次"), ...boxes),
+    errorText(), el("button", {type: "submit"}, "建立演练副本"));
+  submit(form, async values => {
+    const ids = values.getAll("runs").map(Number);
+    if (!ids.length) throw new Error("请至少选择一个已完成批次");
+    const session = await api.createDrill({title: values.get("title"), source_run_ids: ids});
+    navigate(`drills/${session.id}`);
   });
   return form;
 }
@@ -44,6 +66,7 @@ export async function casesPage(config, user, route) {
   const cases = await api.cases();
   const selected = cases.find(item => item.id === route.id) ?? cases.at(-1);
   const operator = user.role === "operator";
+  const runs = selected && operator ? (await api.runs()).filter(run => run.case_id === selected.id) : [];
   return el("div", {class: "page"},
     pageHeading(config.modules[1], `${config.unit} · ${config.fixture}`),
     section("资料目录", cases.length ? table(["编号", "名称", "说明", "操作"], cases.map(item =>
@@ -53,6 +76,7 @@ export async function casesPage(config, user, route) {
     el("div", {class: "split case-split"},
       section(selected ? selected.title : "等待选择资料", selected ?
         [el("p", {}, selected.description), operator ? queueForm(config, selected) : empty("当前账号可查看此资料。"),
+          operator ? el("details", {}, el("summary", {}, "建立外包演练副本"), drillForm(runs)) : null,
           el("details", {}, el("summary", {}, "查看业务数据"), el("pre", {}, JSON.stringify(selected.payload, null, 2)))] :
         empty("先登记一条资料，再提交执行。")),
       operator ? section("登记新资料", registration(config, selected)) : null));

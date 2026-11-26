@@ -5,7 +5,13 @@ from sqlalchemy import insert, select
 
 from src.domain import scenario
 from src.models.cases import cases
+from src.models.drill import drill_batches
 from .audit import record
+
+# Drill copies live as cases too, but they belong to the drill module. Keep them
+# out of the ordinary materials directory so staff and outsource surfaces never
+# blur original batches with practice copies.
+_drill_case_ids = select(drill_batches.c.case_id)
 
 
 def get(db, case_id):
@@ -16,7 +22,13 @@ def get(db, case_id):
 
 
 def list_entries(db):
-    return [dict(row) for row in db.execute(select(cases).order_by(cases.c.id.desc()).limit(100)).mappings()]
+    query = (
+        select(cases)
+        .where(~cases.c.id.in_(_drill_case_ids))
+        .order_by(cases.c.id.desc())
+        .limit(100)
+    )
+    return [dict(row) for row in db.execute(query).mappings()]
 
 
 def create(db, data, actor):

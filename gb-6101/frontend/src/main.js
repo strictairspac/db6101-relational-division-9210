@@ -8,6 +8,7 @@ import { overview } from "./pages/overview.js";
 import { casesPage } from "./pages/cases.js";
 import { runsPage } from "./pages/runs.js";
 import { evidencePage } from "./pages/evidence.js";
+import { drillsPage } from "./pages/drills.js";
 
 const root = document.querySelector("#app");
 let active;
@@ -22,7 +23,7 @@ async function refresh() {
   const token = new AbortController();
   active = token;
   const user = session();
-  const route = activeRoute();
+  let route = activeRoute();
   try {
     const config = await getConfig();
     if (token.signal.aborted) return;
@@ -30,12 +31,19 @@ async function refresh() {
       root.replaceChildren(login(config, refresh));
       return;
     }
+    // Outsourced accounts practise on drill copies only and never load the
+    // original资料、批次 or 车辆 pages.
+    if (user.role === "outsource" && route.name !== "drills") {
+      route = {name: "drills", id: null};
+      if (location.hash !== "#drills") history.replaceState(null, "", "#drills");
+    }
     root.setAttribute("aria-busy", "true");
     const pages = {
       overview: () => overview(config),
       cases: () => casesPage(config, user, route),
       runs: () => runsPage(config, route, token.signal),
       evidence: () => evidencePage(config, user, route),
+      drills: () => drillsPage(config, user, route, token.signal),
     };
     const page = await pages[route.name]();
     if (!token.signal.aborted) {
