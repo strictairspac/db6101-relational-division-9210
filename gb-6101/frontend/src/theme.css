@@ -1,0 +1,24 @@
+:root {
+  --paper: oklch(0.96 .018 158);
+  --surface: oklch(.982 .008 158);
+  --tint: oklch(.916 0.042 158);
+  --accent: oklch(0.47 0.1 158);
+  --on-accent: oklch(.985 .008 158);
+  --ink: oklch(.235 .037 158);
+  --muted: oklch(.42 .04 158);
+  --rule: oklch(.824 0.038 158);
+  --rail: oklch(0.22 0.058 158);
+  --rail-ink: oklch(.953 .015 158);
+  --rail-highlight: oklch(.34 0.062 158);
+  --signal: oklch(.46 .145 25);
+  --title-font: "IBM Plex Mono", "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
+  --body-font: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --rail-width: clamp(13rem, 17vw, 19rem);
+  --login-ratio: 4fr;
+  --feature-ratio: 5fr;
+  --split-ratio: 5fr;
+  --radius: 4px;
+  --rail-size: 4px;
+  --cell-min: 6rem;
+}
+.login-story { border-inline-start: .4rem solid var(--accent); padding-inline-start: 1.4rem; }
